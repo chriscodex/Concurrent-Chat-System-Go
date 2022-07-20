@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"log"
 	"net"
 )
 
@@ -66,7 +67,23 @@ func broadcast() {
 			clients[newClient] = true
 		case clientLeft := <-leavingClients:
 			delete(clients, clientLeft)
-			close(leavingClients)
+			close(clientLeft)
 		}
+	}
+}
+
+func main() {
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *host, *port))
+	if err != nil {
+		log.Fatal(err)
+	}
+	go broadcast()
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			log.Print(err)
+			continue
+		}
+		go handleConnection(conn)
 	}
 }
