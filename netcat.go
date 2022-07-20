@@ -25,6 +25,9 @@ func main() {
 		io.Copy(os.Stdout, conn)
 		done <- struct{}{}
 	}()
+	copyContent(conn, os.Stdin)
+	conn.Close()
+	<-done
 }
 
 func copyContent(dst io.Writer, src io.Reader) {
