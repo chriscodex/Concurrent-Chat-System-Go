@@ -53,3 +53,20 @@ func messageWrite(conn net.Conn, messages <-chan string) {
 		fmt.Fprintln(conn, message)
 	}
 }
+
+func broadcast() {
+	clients := make(map[client]bool)
+	for {
+		select {
+		case message := <-messagesClients:
+			for client := range clients {
+				client <- message
+			}
+		case newClient := <-incomingClients:
+			clients[newClient] = true
+		case clientLeft := <-leavingClients:
+			delete(clients, clientLeft)
+			close(leavingClients)
+		}
+	}
+}
